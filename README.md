@@ -30,7 +30,7 @@ plugins {
     // Replace this:
     // tab-bar location="zellij:tab-bar"
     // With this:
-    tab-bar location="https://github.com/ivoronin/zellij-tab-bar-indexed/releases/latest/download/tab-bar.wasm" {
+    tab-bar location="https://github.com/duminghui/zellij-tab-bar-indexed/releases/latest/download/tab-bar.wasm" {
         show_tab_indices true
     }
     // ... other plugins
@@ -46,7 +46,7 @@ plugins {
     // Replace this:
     // compact-bar location="zellij:compact-bar"
     // With this:
-    compact-bar location="https://github.com/ivoronin/zellij-tab-bar-indexed/releases/latest/download/compact-bar.wasm" {
+    compact-bar location="https://github.com/duminghui/zellij-tab-bar-indexed/releases/latest/download/compact-bar.wasm" {
         show_tab_indices true
     }
     // ... other plugins
