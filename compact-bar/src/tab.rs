@@ -27,6 +27,7 @@ pub fn render_tab(
     is_alternate_tab: bool,
     palette: Styling,
     separator: &str,
+    dimmed: bool,
     tab_index: Option<usize>,
 ) -> LinePart {
     let focused_clients = tab.other_focused_clients.as_slice();
@@ -54,7 +55,6 @@ pub fn render_tab(
     } else {
         palette.ribbon_unselected.base
     };
-
     // Use emphasis color for the index prefix (similar to status bar key styling)
     // For active tab, use the foreground color (inverted) for better contrast
     let index_color = if tab.active {
@@ -64,34 +64,38 @@ pub fn render_tab(
     };
 
     let separator_fill_color = palette.text_unselected.background;
+    let background_color = if dimmed {
+        palette.ribbon_unselected.background
+    } else {
+        background_color
+    };
+    let text_style = if dimmed {
+        style!(palette.ribbon_unselected.base, background_color).italic()
+    } else {
+        style!(foreground_color, background_color).bold()
+    };
     let left_separator = style!(separator_fill_color, background_color).paint(separator);
 
     // Build the tab content with optional index prefix
-    let base = style!(foreground_color, background_color);
-    let text_width = text.width();
-
     let (index_parts, index_len): (Vec<ANSIString>, usize) = if let Some(index) = tab_index {
-        let index_str = index.to_string();
+        let index_str = format!("{}.", index);
         let index_width = index_str.width();
-        let accent = style!(index_color, background_color);
-        (
-            vec![
-                base.bold().paint("<"),
-                accent.bold().paint(index_str),
-                base.bold().paint("> "),
-            ],
-            index_width + 3,
-        )
+        let index_style = if dimmed {
+            style!(index_color, background_color).italic()
+        } else {
+            style!(index_color, background_color).bold()
+        };
+        (vec![index_style.paint(index_str)], index_width)
     } else {
         (vec![], 0)
     };
 
-    let mut tab_text_len = text_width + (separator_width * 2) + 2 + index_len; // + 2 for padding
+    let mut tab_text_len = text.width() + (separator_width * 2) + 2 + index_len; // + 2 for padding
 
-    let mut tab_parts: Vec<ANSIString> = vec![base.paint(" ")];
+    let mut tab_parts: Vec<ANSIString> = vec![text_style.paint(" ")];
     tab_parts.extend(index_parts);
-    tab_parts.push(base.bold().paint(text));
-    tab_parts.push(base.paint(" "));
+    tab_parts.push(text_style.paint(text));
+    tab_parts.push(text_style.paint(" "));
 
     let right_separator = style!(background_color, separator_fill_color).paint(separator);
     let tab_styled_text = if !focused_clients.is_empty() {
@@ -99,15 +103,9 @@ pub fn render_tab(
             cursors(focused_clients, palette.multiplayer_user_colors);
         tab_text_len += extra_length;
         let mut s = String::new();
-        let cursor_beginning = style!(foreground_color, background_color)
-            .bold()
-            .paint("[")
-            .to_string();
+        let cursor_beginning = text_style.paint("[").to_string();
         let cursor_section = ANSIStrings(&cursor_section).to_string();
-        let cursor_end = style!(foreground_color, background_color)
-            .bold()
-            .paint("]")
-            .to_string();
+        let cursor_end = text_style.paint("]").to_string();
         s.push_str(&left_separator.to_string());
         s.push_str(&ANSIStrings(&tab_parts).to_string());
         s.push_str(&cursor_beginning);
@@ -135,6 +133,7 @@ pub fn tab_style(
     mut is_alternate_tab: bool,
     palette: Styling,
     capabilities: PluginCapabilities,
+    dimmed: bool,
     tab_index: Option<usize>,
 ) -> LinePart {
     let separator = tab_separator(capabilities);
@@ -152,7 +151,15 @@ pub fn tab_style(
         is_alternate_tab = false;
     }
 
-    render_tab(tabname, tab, is_alternate_tab, palette, separator, tab_index)
+    render_tab(
+        tabname,
+        tab,
+        is_alternate_tab,
+        palette,
+        separator,
+        dimmed,
+        tab_index,
+    )
 }
 
 pub(crate) fn get_tab_to_focus(

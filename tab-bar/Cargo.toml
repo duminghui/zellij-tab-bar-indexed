@@ -11,8 +11,7 @@ description = "Tab-bar plugin for Zellij with optional tab indices"
 repository = "https://github.com/ivoronin/zellij-tab-bar-indexed"
 
 [dependencies]
-colored = "2"
-ansi_term = "0.12"
-unicode-width = "0.1.8"
-zellij-tile = "0.44"
-zellij-tile-utils = "0.44"
+ansi_term = { version = "0.12.1", default-features = false }
+unicode-width = { version = "0.2.2", default-features = false }
+zellij-tile = "0.45.1"
+zellij-tile-utils = "0.45.1"
