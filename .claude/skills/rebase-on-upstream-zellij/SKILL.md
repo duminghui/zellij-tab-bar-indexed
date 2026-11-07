@@ -24,6 +24,8 @@ Both apply to **both** plugins. The squash commit on `main` (e.g. `b69aaff`) is 
 
 **Critical merge point:** the post-`Granted` re-subscribe must include `EventType::InitialKeybinds`. This is the only place a fork patch and an upstream change overlap; everywhere else they're independent. Missing this silently breaks keybinds in Locked mode at cold start.
 
+**Reapply in the upstream's current shape, not the old fork's shape.** The previous fork tip's diff is the *semantic* reference for what to reapply, not a *shape* reference. When upstream refactors a customization site (v0.45.1 rewrote compact-bar's `setup_subscriptions` into `let events = if …; subscribe(&events)`), express the customization on top of the new shape — the goal is the minimal diff against upstream, and reverting an upstream refactor to preserve the old fork layout inflates the diff for nothing. "Match the previous fork tip byte-for-byte" applies only to pure formatting in files where the fork patch and upstream changes don't overlap (operand order, one-line vs multi-line calls in `compact-bar/src/tab.rs`).
+
 ## Workflow
 
 1. `git checkout -b rebase-<new_tag>` from clean main.
@@ -36,6 +38,7 @@ Both apply to **both** plugins. The squash commit on `main` (e.g. `b69aaff`) is 
    diff -ruN /tmp/zellij-rebase-<new_tag>/<new_tag>/default-plugins/compact-bar/src compact-bar/src
    ```
    Output must equal exactly the fork's customizations. Stylistic drift in `compact-bar/src/tab.rs` (operand order, multi-line vs one-line call) is a common offender — match the previous fork tip byte-for-byte to keep the squash diff minimal.
+   Then check for accidental upstream reverts: `diff -ruN <upstream-new>/…/<plugin>/src <plugin>/src | grep '^-[^-]'` lists deleted upstream lines — every one of them must be a customization's necessary replacement (e.g. `set_selectable(false)` → `request_permission`, single `tab_styled_text` → `tab_parts` array). A block of upstream lines deleted means you reverted an upstream refactor; redo that hunk in the upstream's new shape.
 6. `cargo build --release` produces `target/wasm32-wasip1/release/{tab-bar,compact-bar}.wasm`. Zero warnings.
 
 ## Finalize

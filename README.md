@@ -89,8 +89,8 @@ Permission persists for future sessions.
 rustup target add wasm32-wasip1
 cargo build --release --target wasm32-wasip1
 # Outputs:
-#   target/wasm32-wasip1/release/tab_bar.wasm
-#   target/wasm32-wasip1/release/compact_bar.wasm
+#   target/wasm32-wasip1/release/tab-bar.wasm
+#   target/wasm32-wasip1/release/compact-bar.wasm
 ```
 
 ## License
